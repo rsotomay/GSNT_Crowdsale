@@ -7,22 +7,35 @@
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const NAME = "Gaston";
+  const SYMBOL = "GSTN";
+  const MAX_SUPPLY = "1000000";
+  const PRICE = ethers.parseUnits("0.025", "ether");
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  const Token = await hre.ethers.deployContract("Token", [
+    NAME,
+    SYMBOL,
+    MAX_SUPPLY,
+  ]);
+  await Token.waitForDeployment();
+  console.log(`Token Deployed to: ${Token.target}\n`);
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  const Crowdsale = await hre.ethers.deployContract("Crowdsale", [
+    Token.target,
+    PRICE,
+    ethers.parseUnits(MAX_SUPPLY, "ether"),
+  ]);
+  await Crowdsale.waitForDeployment();
+  console.log(`Crowdsale Deployed to: ${Crowdsale.target}\n`);
 
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
+  //send all tokens to crowdsale
+  const transaction = await Token.transfer(
+    Crowdsale.target,
+    ethers.parseUnits(MAX_SUPPLY, "ether")
   );
+  await transaction.wait();
+
+  console.log(`Tokens transferred to Crowdsale\n`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

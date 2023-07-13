@@ -21,7 +21,7 @@ contract Crowdsale {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Coller must be owner");
+        require(msg.sender == owner, "Caller must be owner");
     _;
 }
     receive() external payable {
