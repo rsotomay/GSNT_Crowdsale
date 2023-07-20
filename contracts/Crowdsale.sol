@@ -9,28 +9,57 @@ contract Crowdsale {
     uint256 public price;
     uint256 public maxTokens;
     uint256 public tokensSold;
+    uint256 public minPurchase;
+    uint256 public maxPurchase;
+    uint256 public crowdsaleOpened;
+    uint256 public crowdsaleClosed;
 
     event Buy(uint256 amount, address buyer);
     event Finalize(uint256 tokenSold, uint256 etherRaised);
 
-    constructor(Token _token, uint256 _price, uint256 _maxTokens) {
+    mapping(address => bool) public whitelist;
+
+    constructor(
+        Token _token, 
+        uint256 _price, 
+        uint256 _maxTokens, 
+        uint256 _minPurchase,
+        uint256 _maxPurchase,
+        uint256 _crowdsaleOpened
+        ) {
         token = _token;
         price = _price;
         maxTokens = _maxTokens;
         owner = msg.sender;
+        minPurchase = _minPurchase;
+        maxPurchase = _maxPurchase;
+        crowdsaleOpened = _crowdsaleOpened;
+        crowdsaleClosed = block.timestamp + crowdsaleOpened;
     }
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller must be owner");
     _;
-}
+    }
+
+    modifier onlyWhitelisted() {
+        require(whitelist[msg.sender] == true, 'You have to be in the whitelist to buy tokens');
+        _;
+    }
+
     receive() external payable {
         uint256 amount = msg.value / price;
         buyTokens(amount * 1e18);
     }
 
-    function buyTokens(uint256 _amount) public payable {
+    function addToWhitelist(address _address) public onlyOwner {
+        whitelist[_address] = true;
+    }
+
+    function buyTokens(uint256 _amount) public payable onlyWhitelisted {
+        require(block.timestamp < crowdsaleClosed && block.timestamp > crowdsaleOpened, 'Crowdsale has ended');
         require(token.balanceOf(address(this)) >= _amount);
+        require(_amount >= minPurchase && maxPurchase <= _amount, 'purchase amount out of range');
         require(msg.value == (_amount / 1e18) * price);
         require(token.transfer(msg.sender, _amount));
 
@@ -44,6 +73,7 @@ contract Crowdsale {
     }
 
     function finalize() public onlyOwner {
+        require(crowdsaleClosed > block.timestamp , "Crowdsale has not ended yet");
         //Send remaining tokens to crowdsale creator
         require(token.transfer(owner, token.balanceOf(address(this))));
         //Send Ether to crowdsale creator

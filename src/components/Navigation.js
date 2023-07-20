@@ -12,7 +12,7 @@ const Navigation = () => {
         height="50"
         className="d-inline-block align-top mx-2"
       />
-      <Navbar.Brand href="#">GSTN ICO Crowdsale</Navbar.Brand>
+      <Navbar.Brand href="#">GSNT ICO Crowdsale</Navbar.Brand>
     </Navbar>
   );
 };

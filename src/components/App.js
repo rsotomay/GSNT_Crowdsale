@@ -85,7 +85,7 @@ function App() {
     <Container>
       <Navigation />
 
-      <h1 className="my-4 text-center">Introducing GSNT Token!</h1>
+      <h1 className="my-4 text-center">Introducing The GASton Token!</h1>
 
       {isLoading ? (
         <Loading />

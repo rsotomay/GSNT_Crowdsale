@@ -7,10 +7,12 @@
 const hre = require("hardhat");
 
 async function main() {
-  const NAME = "Gaston";
-  const SYMBOL = "GSTN";
+  const NAME = "GASton";
+  const SYMBOL = "GSNT";
   const MAX_SUPPLY = "1000000";
   const PRICE = ethers.parseUnits("0.025", "ether");
+  const minPurchase = "10";
+  const maxPurchase = "2000";
 
   const Token = await hre.ethers.deployContract("Token", [
     NAME,
@@ -24,6 +26,8 @@ async function main() {
     Token.target,
     PRICE,
     ethers.parseUnits(MAX_SUPPLY, "ether"),
+    minPurchase,
+    maxPurchase,
   ]);
   await Crowdsale.waitForDeployment();
   console.log(`Crowdsale Deployed to: ${Crowdsale.target}\n`);
