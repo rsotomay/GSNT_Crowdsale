@@ -20,7 +20,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "author": "gregory@dappuniversity.com",
+  "author": "rsotomayor@hotmail.com",
   "license": "ISC",
   "eslintConfig": {
     "extends": [

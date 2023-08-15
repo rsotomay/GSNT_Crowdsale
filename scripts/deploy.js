@@ -12,7 +12,7 @@ async function main() {
   const MAX_SUPPLY = "1000000";
   const PRICE = ethers.parseUnits("0.025", "ether");
   const MIN_PURCHASE = ethers.parseUnits("10", "ether");
-  const MAX_PURCHASE = ethers.parseUnits("2000", "ether");
+  const MAX_PURCHASE = ethers.parseUnits("20000", "ether");
   const CROWD_SALE_OPENED = (Date.now() + 180000).toString().slice(0, 10);
   const CROWD_SALE_CLOSED = (Date.now() + 1800000).toString().slice(0, 10);
 
