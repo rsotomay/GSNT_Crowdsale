@@ -25,6 +25,16 @@
         "internalType": "uint256",
         "name": "_maxPurchase",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_crowdsaleOpened",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_crowdsaleClosed",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -96,7 +106,20 @@
   },
   {
     "inputs": [],
-    "name": "crowdsaleDeadline",
+    "name": "crowdsaleClosed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "crowdsaleOpened",
     "outputs": [
       {
         "internalType": "uint256",

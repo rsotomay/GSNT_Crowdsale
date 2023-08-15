@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
+import Countdown from "react-countdown";
 import { ethers } from "ethers";
 
 //components
@@ -7,6 +8,7 @@ import Navigation from "./Navigation";
 import Info from "./Info";
 import Loading from "./Loading";
 import Progress from "./Progress";
+import Whitelist from "./Whitelist";
 import Buy from "./Buy";
 
 //Abis
@@ -21,6 +23,8 @@ function App() {
   const [crowdsale, setCrowdsale] = useState(null);
 
   const [account, setAccount] = useState(null);
+  const [revealTimeOpens, setRevealTimeOpens] = useState(0);
+  const [revealTimeCloses, setRevealTimeCloses] = useState(0);
   const [accountBalance, setAccountBalance] = useState(0);
 
   const [price, setPrice] = useState(0);
@@ -61,11 +65,20 @@ function App() {
       await token.balanceOf(account),
       18
     );
+
+    //Fetch Countdown to crowdsaleOpened
+    const crowdsaleOpens = await crowdsale.crowdsaleOpened();
+    setRevealTimeOpens(crowdsaleOpens.toString() + "000");
+
+    //Fetch Countdown to crowdsaleClosed
+    const crowdsaleCloses = await crowdsale.crowdsaleClosed();
+    setRevealTimeCloses(crowdsaleCloses.toString() + "000");
+
     setAccountBalance(accountBalance);
     // Fetch price
     const price = ethers.formatUnits(await crowdsale.price(), 18);
     setPrice(price);
-    // fetch mas tokens
+    // fetch max tokens
     const maxTokens = ethers.formatUnits(await crowdsale.maxTokens(), 18);
     setMaxTokens(maxTokens);
     // fetch tokens sold
@@ -91,9 +104,26 @@ function App() {
         <Loading />
       ) : (
         <>
-          <p className="text-center">
+          <p className="my-1 text-center">
+            <strong>Token Sale Starts In:</strong>
+          </p>
+          <div className="my-1 text-center">
+            <Countdown date={parseInt(revealTimeOpens)} className="h4" />
+          </div>
+          <p className="my-1 text-center">
+            <strong>Time left to buy:</strong>
+          </p>
+          <div className="my-1 text-center">
+            <Countdown date={parseInt(revealTimeCloses)} className="h4" />
+          </div>
+          <p className="my-3 text-center">
             <strong>Current Price:</strong> {price} ETH
           </p>
+          <Whitelist
+            provider={provider}
+            crowdsale={crowdsale}
+            setIsLoading={setIsLoading}
+          />
           <Buy
             provider={provider}
             price={price}

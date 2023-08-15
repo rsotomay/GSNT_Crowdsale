@@ -1,6 +1,6 @@
 import ProgressBar from "react-bootstrap/ProgressBar";
 
-const Progress = ({ maxTokens, tokensSold }) => {
+const Progress = ({ tokensSold, maxTokens }) => {
   return (
     <div className="my-3">
       <ProgressBar

@@ -25,7 +25,8 @@ contract Crowdsale {
         uint256 _maxTokens, 
         uint256 _minPurchase,
         uint256 _maxPurchase,
-        uint256 _crowdsaleOpened
+        uint256 _crowdsaleOpened,
+        uint256 _crowdsaleClosed
         ) {
         token = _token;
         price = _price;
@@ -34,7 +35,7 @@ contract Crowdsale {
         minPurchase = _minPurchase;
         maxPurchase = _maxPurchase;
         crowdsaleOpened = _crowdsaleOpened;
-        crowdsaleClosed = block.timestamp + crowdsaleOpened;
+        crowdsaleClosed = _crowdsaleClosed;
     }
 
     modifier onlyOwner() {
@@ -57,9 +58,11 @@ contract Crowdsale {
     }
 
     function buyTokens(uint256 _amount) public payable onlyWhitelisted {
-        require(block.timestamp < crowdsaleClosed && block.timestamp > crowdsaleOpened, 'Crowdsale has ended');
+        require(block.timestamp >= crowdsaleOpened, 'Crowdsale is not open yet');
+        require(block.timestamp < crowdsaleClosed, 'Crowdsale has ended');
         require(token.balanceOf(address(this)) >= _amount);
-        require(_amount >= minPurchase && maxPurchase <= _amount, 'purchase amount out of range');
+        require(_amount >= minPurchase, 'You have to buy more tokens');
+        require(maxPurchase <= _amount, 'You cannot buy that many tokens');
         require(msg.value == (_amount / 1e18) * price);
         require(token.transfer(msg.sender, _amount));
 

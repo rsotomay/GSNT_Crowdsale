@@ -11,8 +11,10 @@ async function main() {
   const SYMBOL = "GSNT";
   const MAX_SUPPLY = "1000000";
   const PRICE = ethers.parseUnits("0.025", "ether");
-  const minPurchase = "10";
-  const maxPurchase = "2000";
+  const MIN_PURCHASE = ethers.parseUnits("10", "ether");
+  const MAX_PURCHASE = ethers.parseUnits("2000", "ether");
+  const CROWD_SALE_OPENED = (Date.now() + 180000).toString().slice(0, 10);
+  const CROWD_SALE_CLOSED = (Date.now() + 1800000).toString().slice(0, 10);
 
   const Token = await hre.ethers.deployContract("Token", [
     NAME,
@@ -26,8 +28,10 @@ async function main() {
     Token.target,
     PRICE,
     ethers.parseUnits(MAX_SUPPLY, "ether"),
-    minPurchase,
-    maxPurchase,
+    MIN_PURCHASE,
+    MAX_PURCHASE,
+    CROWD_SALE_OPENED,
+    CROWD_SALE_CLOSED,
   ]);
   await Crowdsale.waitForDeployment();
   console.log(`Crowdsale Deployed to: ${Crowdsale.target}\n`);

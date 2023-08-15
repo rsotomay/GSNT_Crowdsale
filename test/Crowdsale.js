@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
 const tokens = (n) => {
   return ethers.parseUnits(n.toString(), "ether");
@@ -11,7 +12,6 @@ describe("Crowdsale", () => {
   let crowdsale, token;
   let accounts, deployer, user1, user2;
   let transaction, result;
-  const crowdsaleOpened = 7200;
 
   beforeEach(async () => {
     // configures accounts
@@ -19,6 +19,11 @@ describe("Crowdsale", () => {
     deployer = accounts[0];
     user1 = accounts[1];
     user2 = accounts[2];
+    //Configures time
+    let now = await time.latest();
+    let crowdsaleOpened = now + 300;
+    let crowdsaleClosed = now + 1000;
+
     // Load contracts
     const Crowdsale = await ethers.getContractFactory("Crowdsale");
     const Token = await ethers.getContractFactory("Token");
@@ -33,7 +38,8 @@ describe("Crowdsale", () => {
       "1000000",
       "10",
       "2000",
-      7200
+      crowdsaleOpened,
+      crowdsaleClosed
     );
 
     // Adds address to whitelist
@@ -74,14 +80,6 @@ describe("Crowdsale", () => {
   });
 
   describe("Adds to whitelist", () => {
-    let transaction, result;
-
-    beforeEach(async () => {
-      transaction = await crowdsale
-        .connect(deployer)
-        .addToWhitelist(user1.getAddress());
-      result = await transaction.wait();
-    });
     describe("Success", () => {
       it("updates whitelist", async () => {
         expect(await crowdsale.whitelist(user1)).to.equal(true);
@@ -102,25 +100,21 @@ describe("Crowdsale", () => {
 
     describe("Success", () => {
       beforeEach(async () => {
+        let now = await time.latest();
+        let crowdsaleOpened = now + 300;
+        await time.increaseTo(crowdsaleOpened + 1);
+
         transaction = await crowdsale
           .connect(user1)
           .buyTokens(amount, { value: ether(10) });
         result = await transaction.wait();
       });
-      /////-------------------- working here ---------------------------
-      it("advance timestamp to open crowdsale ", async () => {
-        const crowdsaleClosed =
-          (await ethers.provider.getBlock("latest")).timestamp +
-          crowdsaleOpened;
+      it("Confirms advance timestamp to open crowdsale ", async () => {
         expect(
-          await ethers.provider.send("evm_setNextBlockTimestamp", [
-            crowdsaleClosed,
-          ])
-        );
-        await ethers.provider.send("evm_mine");
+          await ethers.provider.getBalance(crowdsale.getAddress())
+        ).to.equal(ether(10));
       });
 
-      /////////////////// --------------------- ------------------////////////////////////
       it("transfers tokens", async () => {
         expect(await token.balanceOf(await crowdsale.getAddress())).to.equal(
           tokens(999990)
@@ -183,26 +177,15 @@ describe("Crowdsale", () => {
             .buyTokens(purchaseAmount, { value: ether(2001) })
         ).to.be.reverted;
       });
-      ///////////////// ----------------------- working here---------------------///////////////////////////////////
       it("rejects purchase if crowdsale has closed", async () => {
-        const crowdsaleClosed =
-          (await ethers.provider.getBlock("latest")).timestamp +
-          crowdsaleOpened;
-        await ethers.provider.send("evm_setNextBlockTimestamp", [
-          crowdsaleClosed,
-        ]);
-        await ethers.provider.send("evm_mine");
+        let now = await time.latest();
+        let crowdsaleClosed = now + 1000;
+        await time.increaseTo(crowdsaleClosed + 1);
 
-        await ethers.provider.send("evm_setNextBlockTimestamp", [
-          crowdsaleClosed + 1,
-        ]);
-        await ethers.provider.send("evm_mine");
         await expect(
           crowdsale.connect(user1).buyTokens(amount, { value: ether(10) })
         ).to.be.reverted;
       });
-
-      ///////////////// ----------------------- working here---------------------///////////////////////////////////
     });
   });
 
@@ -212,6 +195,9 @@ describe("Crowdsale", () => {
 
     describe("Success", () => {
       beforeEach(async () => {
+        let now = await time.latest();
+        let crowdsaleOpened = now + 300;
+        await time.increaseTo(crowdsaleOpened + 1);
         transaction = await user1.sendTransaction({
           to: crowdsale.getAddress(),
           value: amount,
@@ -259,6 +245,9 @@ describe("Crowdsale", () => {
 
     describe("Success", () => {
       beforeEach(async () => {
+        let now = await time.latest();
+        let crowdsaleOpened = now + 300;
+        await time.increaseTo(crowdsaleOpened + 1);
         transaction = await crowdsale
           .connect(user1)
           .buyTokens(amount, { value: value });
@@ -293,21 +282,10 @@ describe("Crowdsale", () => {
       });
 
       it("reject finalizing if crowdsale is open", async () => {
-        const crowdsaleClosed =
-          (await ethers.provider.getBlock("latest")).timestamp +
-          crowdsaleOpened;
-        await ethers.provider.send("evm_setNextBlockTimestamp", [
-          crowdsaleClosed - 1,
-        ]);
-        await ethers.provider.send("evm_mine");
-
-        await ethers.provider.send("evm_setNextBlockTimestamp", [
-          crowdsaleClosed,
-        ]);
-        await ethers.provider.send("evm_mine");
-        await expect(
-          crowdsale.connect(user1).buyTokens(amount, { value: value })
-        ).to.be.reverted;
+        let now = await time.latest();
+        let crowdsaleOpened = now + 1000;
+        await time.increaseTo(crowdsaleOpened + 1);
+        await expect(crowdsale.connect(deployer).finalize()).to.be.reverted;
       });
     });
   });
