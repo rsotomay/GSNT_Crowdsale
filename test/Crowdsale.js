@@ -36,8 +36,8 @@ describe("Crowdsale", () => {
       token.getAddress(),
       ether(1),
       "1000000",
-      "10",
-      "2000",
+      tokens(10),
+      tokens(2000),
       crowdsaleOpened,
       crowdsaleClosed
     );
@@ -258,6 +258,9 @@ describe("Crowdsale", () => {
       });
 
       it("transfers remaining tokens to owner", async () => {
+        // let now = await time.latest();
+        // let crowdsaleClosed = now + 1000;
+        // await time.increaseTo(crowdsaleClosed + 1);
         expect(await token.balanceOf(crowdsale.getAddress())).to.equal(0);
         expect(await token.balanceOf(deployer.getAddress())).to.equal(
           tokens(999990)
@@ -283,8 +286,8 @@ describe("Crowdsale", () => {
 
       it("reject finalizing if crowdsale is open", async () => {
         let now = await time.latest();
-        let crowdsaleOpened = now + 1000;
-        await time.increaseTo(crowdsaleOpened + 1);
+        let crowdsaleClosed = now + 1000;
+        await time.increaseTo(crowdsaleClosed - 1);
         await expect(crowdsale.connect(deployer).finalize()).to.be.reverted;
       });
     });
