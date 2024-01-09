@@ -49,9 +49,9 @@ contract Token {
     }
     function transferFrom(address _from, address _to, uint256 _value) public returns(bool success) {
         require(_value <= balanceOf[_from]);
-        // check approval - _value is <= allowans approved by _from to msg.sender
+        // check approval - _value is <= allowance approved by _from to msg.sender
         require(_value <= allowance[_from][msg.sender]);
-        //Reset allowance - allownce decreases by the _value 
+        //Reset allowance - allowance decreases by the _value 
         allowance[_from][msg.sender] -= _value;
         // spend tokens
         _transfer(_from, _to, _value);
